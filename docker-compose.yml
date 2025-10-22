@@ -1,0 +1,52 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: deputies-app
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/var/www/html
+    environment:
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_DATABASE=deputies
+      - DB_USERNAME=root
+      - DB_PASSWORD=secret
+      - REDIS_HOST=redis
+    depends_on:
+      - db
+      - redis
+    networks:
+      - deputies-network
+
+  db:
+    image: mysql:8.0
+    container_name: deputies-db
+    environment:
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_DATABASE: deputies
+    volumes:
+      - db-data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+    networks:
+      - deputies-network
+
+  redis:
+    image: redis:alpine
+    container_name: deputies-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - deputies-network
+
+volumes:
+  db-data:
+
+networks:
+  deputies-network:
+    driver: bridge
